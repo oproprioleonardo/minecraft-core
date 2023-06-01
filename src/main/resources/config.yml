@@ -1,7 +1,6 @@
 data_access:
-  dbname: "postgres" #mysql or postgres
+  db_id: 1 #1 - postgres or 2 - mysql
   password: 'admin'
   user: "postgres"
-  host: "localhost"
-  port: '5432'
+  host: "localhost:5432"
   database: "test"

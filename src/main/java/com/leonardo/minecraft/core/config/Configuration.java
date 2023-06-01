@@ -39,13 +39,15 @@ public class Configuration {
     }
 
     public String get(String path, Boolean color) {
-        if (!this.config.contains(path)) {
+        if (!this.config.contains(path))
             return "";
-        }
-        if (color) {
+        if (color)
             return ChatColor.translateAlternateColorCodes('&', this.config.getString(path));
-        }
         return this.config.getString(path);
+    }
+
+    public String getString(String path) {
+        return get(path, false);
     }
 
     public String getMessage(String message) {

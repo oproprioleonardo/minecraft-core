@@ -1,6 +1,7 @@
 package com.leonardo.minecraft.core.internal.database;
 
 import com.leonardo.minecraft.core.api.database.ConnectionProvider;
+import com.leonardo.minecraft.core.config.DatabaseConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -10,13 +11,13 @@ import java.sql.SQLException;
 public class HikariPostgresConnectionProvider implements ConnectionProvider {
     private final HikariDataSource dataSource;
 
-    public HikariPostgresConnectionProvider(String host, String username, String password, String database) {
-        HikariConfig config = new HikariConfig();
+    public HikariPostgresConnectionProvider(DatabaseConfig databaseConfig) {
+        final HikariConfig config = new HikariConfig();
 
         config.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
-        config.setJdbcUrl("jdbc:postgresql://" + host + "/" + database);
-        config.setUsername(username);
-        config.setPassword(password);
+        config.setJdbcUrl("jdbc:postgresql://" + databaseConfig.getHost() + "/" + databaseConfig.getDatabase());
+        config.setUsername(databaseConfig.getUser());
+        config.setPassword(databaseConfig.getPassword());
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

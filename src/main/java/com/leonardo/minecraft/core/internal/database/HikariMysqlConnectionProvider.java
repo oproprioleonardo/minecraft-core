@@ -1,6 +1,7 @@
 package com.leonardo.minecraft.core.internal.database;
 
 import com.leonardo.minecraft.core.api.database.ConnectionProvider;
+import com.leonardo.minecraft.core.config.DatabaseConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -11,12 +12,12 @@ public class HikariMysqlConnectionProvider implements ConnectionProvider {
 
     private final HikariDataSource dataSource;
 
-    public HikariMysqlConnectionProvider(String host, String username, String password, String database) {
-        HikariConfig config = new HikariConfig();
+    public HikariMysqlConnectionProvider(DatabaseConfig databaseConfig) {
+        final HikariConfig config = new HikariConfig();
 
-        config.setJdbcUrl("jdbc:mysql://" + host + "/" + database);
-        config.setUsername(username);
-        config.setPassword(password);
+        config.setJdbcUrl("jdbc:mysql://" + databaseConfig.getHost() + "/" + databaseConfig.getDatabase());
+        config.setUsername(databaseConfig.getUser());
+        config.setPassword(databaseConfig.getPassword());
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
