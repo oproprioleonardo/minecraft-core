@@ -7,7 +7,7 @@
     <groupId>com.leonardo.minecraft</groupId>
     <artifactId>core</artifactId>
     <name>Core</name>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <inceptionYear>2023</inceptionYear>
     <developers>
         <developer>
