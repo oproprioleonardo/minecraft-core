@@ -11,6 +11,7 @@ import com.leonardo.minecraft.core.internal.database.HikariPostgresConnectionPro
 import com.leonardo.minecraft.core.internal.uuid.CachedOkHttpUUIDProvider;
 import fr.minuskube.inv.InventoryManager;
 import okhttp3.OkHttpClient;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,9 +21,10 @@ public class Core extends JavaPlugin {
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final OkHttpClient client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
+    private File customConfigFile;
+    private FileConfiguration customConfig;
     private UUIDProvider uuidProvider;
     private InventoryManager inventoryManager;
-    private YamlConfiguration configuration;
     private DatabaseConfig databaseConfig;
     private ConnectionProvider connectionProvider;
 
@@ -46,10 +48,6 @@ public class Core extends JavaPlugin {
         return this.uuidProvider;
     }
 
-    public YamlConfiguration getConfiguration() {
-        return configuration;
-    }
-
     public OkHttpClient getClient() {
         return this.client;
     }
@@ -60,18 +58,21 @@ public class Core extends JavaPlugin {
         this.uuidProvider = new CachedOkHttpUUIDProvider(this);
         this.inventoryManager = new InventoryManager(this);
         this.inventoryManager.init();
-        this.configuration = this.provideConfiguration();
-        this.databaseConfig = this.provideDatabaseConfig(this.configuration);
+        this.provideConfig();
+        this.databaseConfig = this.provideDatabaseConfig(this.customConfig);
         this.connectionProvider = this.provideConnectionProvider();
     }
-    private YamlConfiguration provideConfiguration() {
-        if (!new File(this.getDataFolder(), "config.yml").exists()) {
-            this.saveResource("config.yml", false);
+
+    private void provideConfig() {
+        this.customConfigFile = new File(getDataFolder(), "config.yml");
+        if (!customConfigFile.exists()) {
+            customConfigFile.getParentFile().mkdirs();
+            saveResource("config.yml", false);
         }
-        return YamlConfiguration.loadConfiguration(new File(this.getDataFolder() + File.separator + "config.yml"));
+        customConfig = YamlConfiguration.loadConfiguration(customConfigFile);
     }
 
-    private DatabaseConfig provideDatabaseConfig(YamlConfiguration cfg) {
+    private DatabaseConfig provideDatabaseConfig(FileConfiguration cfg) {
         final DatabaseConfig databaseConfig = new DatabaseConfig();
         databaseConfig.setDbname(DatabaseName.valueOf(cfg.getInt("data_access.db_id")));
         databaseConfig.setHost(cfg.getString("data_access.host"));
@@ -86,4 +87,11 @@ public class Core extends JavaPlugin {
                 new HikariPostgresConnectionProvider(this.databaseConfig) : new HikariMysqlConnectionProvider(this.databaseConfig);
     }
 
+    public File getCustomConfigFile() {
+        return customConfigFile;
+    }
+
+    public FileConfiguration getCustomConfig() {
+        return customConfig;
+    }
 }
