@@ -15,7 +15,7 @@ public interface CrudRepository<B, T> {
 
     Set<T> findAll();
 
-    void saveAll(Set<B> objects);
+    void saveAll(Set<T> objects);
 
     void create(T object);
 
