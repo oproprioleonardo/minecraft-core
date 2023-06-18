@@ -1,6 +1,6 @@
 main: com.leonardo.minecraft.core.Core
 name: ServerCore
-version: 1.0.3
+version: 1.0.4
 author: Leonardo
 description: A core plugin for our plugins
 website: https://www.github.com/oproprioleonardo
