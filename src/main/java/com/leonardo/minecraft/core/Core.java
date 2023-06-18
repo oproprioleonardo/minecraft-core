@@ -8,7 +8,7 @@ import com.leonardo.minecraft.core.config.DatabaseConfig;
 import com.leonardo.minecraft.core.config.DatabaseName;
 import com.leonardo.minecraft.core.internal.database.HikariMysqlConnectionProvider;
 import com.leonardo.minecraft.core.internal.database.HikariPostgresConnectionProvider;
-import com.leonardo.minecraft.core.internal.uuid.CachedOkHttpUUIDProvider;
+import com.leonardo.minecraft.core.internal.profile.CachedOkHttpUUIDProvider;
 import fr.minuskube.inv.InventoryManager;
 import okhttp3.OkHttpClient;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -27,6 +27,49 @@ public class Core extends JavaPlugin {
     private InventoryManager inventoryManager;
     private DatabaseConfig databaseConfig;
     private ConnectionProvider connectionProvider;
+
+
+    @Override
+    public void onEnable() {
+        this.uuidProvider = new CachedOkHttpUUIDProvider(this);
+        this.inventoryManager = new InventoryManager(this);
+        this.inventoryManager.init();
+        this.customConfigFile = new File(getDataFolder(), "config.yml");
+        this.customConfig = this.provideConfig(this.customConfigFile);
+        this.databaseConfig = this.provideDatabaseConfig(this.customConfig);
+        this.connectionProvider = this.provideConnectionProvider(this.databaseConfig);
+    }
+
+    private FileConfiguration provideConfig(final File customConfigFile) {
+        if (!customConfigFile.exists()) {
+            customConfigFile.getParentFile().mkdirs();
+            saveResource("config.yml", false);
+        }
+        return YamlConfiguration.loadConfiguration(customConfigFile);
+    }
+
+    private DatabaseConfig provideDatabaseConfig(final FileConfiguration cfg) {
+        final DatabaseConfig databaseConfig = new DatabaseConfig();
+        databaseConfig.setDbname(DatabaseName.valueOf(cfg.getInt("data_access.db_id")));
+        databaseConfig.setHost(cfg.getString("data_access.host"));
+        databaseConfig.setPassword(cfg.getString("data_access.password"));
+        databaseConfig.setUser(cfg.getString("data_access.user"));
+        databaseConfig.setDatabase(cfg.getString("data_access.database"));
+        return databaseConfig;
+    }
+
+    private ConnectionProvider provideConnectionProvider(final DatabaseConfig databaseConfig) {
+        return databaseConfig.getDbname() == DatabaseName.POSTGRES ?
+                new HikariPostgresConnectionProvider(databaseConfig) : new HikariMysqlConnectionProvider(databaseConfig);
+    }
+
+    public File getCustomConfigFile() {
+        return customConfigFile;
+    }
+
+    public FileConfiguration getCustomConfig() {
+        return customConfig;
+    }
 
     public DatabaseConfig getDatabaseConfig() {
         return databaseConfig;
@@ -52,46 +95,4 @@ public class Core extends JavaPlugin {
         return this.client;
     }
 
-
-    @Override
-    public void onEnable() {
-        this.uuidProvider = new CachedOkHttpUUIDProvider(this);
-        this.inventoryManager = new InventoryManager(this);
-        this.inventoryManager.init();
-        this.provideConfig();
-        this.databaseConfig = this.provideDatabaseConfig(this.customConfig);
-        this.connectionProvider = this.provideConnectionProvider();
-    }
-
-    private void provideConfig() {
-        this.customConfigFile = new File(getDataFolder(), "config.yml");
-        if (!customConfigFile.exists()) {
-            customConfigFile.getParentFile().mkdirs();
-            saveResource("config.yml", false);
-        }
-        customConfig = YamlConfiguration.loadConfiguration(customConfigFile);
-    }
-
-    private DatabaseConfig provideDatabaseConfig(FileConfiguration cfg) {
-        final DatabaseConfig databaseConfig = new DatabaseConfig();
-        databaseConfig.setDbname(DatabaseName.valueOf(cfg.getInt("data_access.db_id")));
-        databaseConfig.setHost(cfg.getString("data_access.host"));
-        databaseConfig.setPassword(cfg.getString("data_access.password"));
-        databaseConfig.setUser(cfg.getString("data_access.user"));
-        databaseConfig.setDatabase(cfg.getString("data_access.database"));
-        return databaseConfig;
-    }
-
-    private ConnectionProvider provideConnectionProvider() {
-        return this.databaseConfig.getDbname() == DatabaseName.POSTGRES ?
-                new HikariPostgresConnectionProvider(this.databaseConfig) : new HikariMysqlConnectionProvider(this.databaseConfig);
-    }
-
-    public File getCustomConfigFile() {
-        return customConfigFile;
-    }
-
-    public FileConfiguration getCustomConfig() {
-        return customConfig;
-    }
 }

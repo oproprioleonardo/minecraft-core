@@ -1,4 +1,4 @@
-package com.leonardo.minecraft.core.internal.uuid;
+package com.leonardo.minecraft.core.internal.profile;
 
 import com.google.gson.JsonObject;
 import com.leonardo.minecraft.core.Core;
